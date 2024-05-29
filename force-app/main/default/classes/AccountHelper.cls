@@ -18,29 +18,78 @@ Methods:
     - Note: You'll likely need to adjust the method signature to accept the necessary parameters.
 
 - `setRating`: 
-    - Purpose: Evaluate certain conditions on the Account and assign a rating based on that evaluation. You'll need to define the method's signature and implement its logic.
+    - Purpose: Evaluate certain conditions on the Account and assign a rating based on that evaluation. 
+        You'll need to define the method's signature and implement its logic.
 
 - `defaultContact`: 
-    - Purpose: Create a default contact related to the Account after the Account is inserted. You'll need to define the method's signature and implement its logic.
+    - Purpose: Create a default contact related to the Account after the Account is inserted. 
+        You'll need to define the method's signature and implement its logic.
 
 Remember:
 Always ensure that your helper methods are bulk-safe to handle multiple records efficiently. 
+
+* Author: Frank Larkin
 */
 public with sharing class AccountHelper {
+
+    // Part 1 - When an account is inserted change the account type to 'Prospect' if there is no value in the type field.
     
-    public void setTypeProspect(SObject objects){
+    public void setTypeProspect(Account acc){
+        if (Trigger.isInsert) {
+            if (acc.Type == null || acc.Type == '') {
+                acc.Type = 'Prospect';
+            }
+        }
+    }
+
+    // Part 1 - When an account is inserted copy the shipping address to the billing address. 
+
+    public void addressCopy(Account acc){
+        if (Trigger.isInsert) {
+            if (acc.ShippingStreet != null && acc.ShippingStreet != '') {
+                acc.BillingStreet = acc.ShippingStreet;
+            }
+            if (acc.ShippingCity != null && acc.ShippingCity != '') {
+                acc.BillingCity = acc.ShippingCity;
+            }
+            if (acc.ShippingState != null && acc.ShippingState != '') {
+                acc.BillingState = acc.ShippingState;
+            }
+            if (acc.ShippingPostalCode != null && acc.ShippingPostalCode != '') {
+                acc.BillingPostalCode = acc.ShippingPostalCode;
+            }
+            if (acc.ShippingCountry != null && acc.ShippingCountry != '') {
+                acc.BillingCountry = acc.ShippingCountry;
+            }
+
+        }
+
 
     }
 
-    void addressCopy(){
+    // Part 1 - When an account is inserted set the rating to 'Hot' if the Phone, Website, and Fax is not empty.
 
+    public void setAccountRating(Account acc){
+        if (Trigger.isInsert) {
+            if (acc.Phone != '' && acc.Website != '' && acc.Fax != '') {
+                acc.Rating = 'Hot';
+            }
+        }
     }
 
-    //[public | private ] [static] data_type setRating (input parameters) {
-    //  The body of the method
-    //}
+    // Part 1 - When an account is inserted create a contact related to the account with the following default values:
+    
+    public void createContact(Account acc) {
+        if (Trigger.isInsert && Trigger.isAfter) {
+            Contact con = new Contact(
+                AccountId = acc.Id,
+                LastName = 'DefaultContact',
+                Email = 'default@email.com'
+            );
+            insert con;
+        }
 
-    //[public | private ] [static] data_type defaultContact (input parameters) {
-    //  The body of the method
-    //}
+
+    }
+    
 }

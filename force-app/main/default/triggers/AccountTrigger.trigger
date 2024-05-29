@@ -26,7 +26,7 @@ trigger AccountTrigger on Account (before insert, after insert) {
     */
     if (Trigger.isBefore && Trigger.isInsert) {
         for (Account acc : Trigger.new) {
-            if (acc.Type == null) {
+            if (acc.Type == null || acc.Type == '') {
                 acc.Type = 'Prospect';
             }
         }
